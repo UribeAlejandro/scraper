@@ -13,18 +13,19 @@ def scrape_jobs(job=None, location=None):
     :rtype: BeautifulSoup object
     """
     if location and job:
-        URL = f"https://www.indeed.com.mx/jobs?q={job}&l={location}"
-    elif location and not job:
-        URL = f"https://www.indeed.com.mx/trabajo?q=developer&l={location}"
-    elif job and not location:
-        URL = f"https://www.indeed.com.mx/jobs?q={job}&l="
-    elif not job and not location:
-        URL = "https://www.indeed.com.mx/jobs?q=&l="
+        job = job.replace(" ", "-")
+        URL = f"https://www.computrabajo.com.co/trabajo-de-{job}-en-{location}"
+    #elif location and not job:
+    #    URL = f"https://www.indeed.com.mx/trabajo?q=developer&l={location}"
+    #elif job and not location:
+    #    URL = f"https://www.indeed.com.mx/jobs?q={job}&l="
+    #elif not job and not location:
+    #    URL = "https://www.indeed.com.mx/jobs?q=&l="
 
     page = requests.get(URL)
 
     soup = BeautifulSoup(page.content, "html.parser")
-    results = soup.find(id="resultsCol")
+    results = soup.find(id="p_ofertas")
     return results
 
 def print_all_jobs(results):
@@ -35,23 +36,25 @@ def print_all_jobs(results):
     :return: None - just meant to print results
     :rtype: None
     """
-    job_elems = results.find_all('div', class_='jobsearch-SerpJobCard')
+    job_elems = results.find_all('div', class_='w100')
+    #print(job_elems)
 
     for job_elem in job_elems:
-        title_elem = job_elem.find('a', class_="jobtitle turnstileLink")
-        company_elem = job_elem.find('span', class_='company')
-        location_elem = job_elem.find('span', class_='location')
-        link_cont_elem = job_elem.find('div', class_='title')
+        title_elem = job_elem.find('a', class_="js-o-link fc_base")
+        #company_elem = job_elem.find('span', class_='company')
+        #location_elem = job_elem.find('span', class_='location')
+        link_cont_elem = job_elem.find('h1', class_='fs18 fwB')
 
-        if None in (title_elem, company_elem, location_elem):
-            continue
+        #if None in (title_elem, company_elem, location_elem, link_cont_elem):
+        #    continue
             # print(job_elem.prettify())  # to inspect the 'None' element
 
-        print("Vacante" + title_elem.text.strip())
-        link_elem = link_cont_elem.find("a")
-        print("Empresa " + company_elem.text.strip())
-        print("Lugar " + location_elem.text.strip())
-        print("https://www.indeed.com.mx" + link_elem["href"])
+        print("Vacante: " + title_elem.text.strip())
+        #link_elem = link_cont_elem.find("h1")
+        #print("Empresa " + company_elem.text.strip())
+        #print("Lugar " + location_elem.text.strip())
+        #print("https://www.indeed.com.mx" + link_elem["href"])
+        print(link_cont_elem.find("a", class_='js-o-link fc_base'))
         print("*"*10)
         print()
 
@@ -93,18 +96,18 @@ def print_all_jobs_2(results_2):
     for job_elem in job_elems:
         title_elem = job_elem.find('a', class_="js-o-link")
         company_elem = job_elem.find('a', class_='it-blank')["title"]
-        # location_elem = job_elem.find('a', title_='Empleos')
+        location_elem = job_elem.find('a', title_='Empleos')
 
-        if None in (title_elem, company_elem):
-            continue
+        #if None in (title_elem, company_elem, location_elem):
+        #    continue
             # print(job_elem.prettify())  # to inspect the 'None' element
 
-        print("Vacante " + title_elem.text.strip())
-        print(company_elem.strip())
+        #print("Vacante " + title_elem.text.strip())
+        #print(company_elem.strip())
         # print("Lugar " + location_elem.text.strip())
-        print("https://www.computrabajo.com.mx" + title_elem["href"])
-        print("*"*10)
-        print()
+        #print("https://www.computrabajo.com.mx" + title_elem["href"])
+        #print("*"*10)
+        #print()
 
 
 # USE THE SCRIPT AS A COMMAND-LINE INTERFACE
@@ -123,14 +126,17 @@ args = my_parser.parse_args()
 job, location = args.job, args.location
 
 results = scrape_jobs(job, location)
-results_2 = scrape_jobs_2(job, location)
+#results_2 = scrape_jobs_2(job, location)
 
-if not results and not results_2:
-    print("Ingresa los datos para tu búsqueda (-job, -location)")
-elif results and not results_2:
+if results:
     print_all_jobs(results)
-elif not results and results_2:
-    print_all_jobs_2(results_2)
-elif results and results_2:
-    print_all_jobs(results)
-    print_all_jobs_2(results_2)
+
+#if not results and not results_2:
+#    print("Ingresa los datos para tu búsqueda (-job, -location)")
+#elif results and not results_2:
+#    print_all_jobs(results)
+#elif not results and results_2:
+#    print_all_jobs_2(results_2)
+#elif results and results_2:
+#    print_all_jobs(results)
+#    print_all_jobs_2(results_2)
